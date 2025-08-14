@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Coin Tracker</title>
+  </head>
+  <body>
+    <style>
+</style>
+    <main class="bg-[#1A1A1C] h-screen w-full md:p-15 p-5 text-white">
+      <nav
+        class="flex justify-between items-center h-12 gap-x-5 md:gap-y-0 gap-y-2 md:flex-row flex-col md:mb-0 mb-15"
+      >
+        <input
+          class="h-12 w-full border-1 border-white pl-2"
+          type="text"
+          name="search"
+          id="search"
+          placeholder="Search By Name or Symbol..."
+        />
+        <button id="searchbtn"
+          class="hover:text-[#1A1A1C] hover:bg-white duration-300 ease-in-out hover:text-xl cursor-pointer shadow-white h-12 md:w-50 w-full border-1 border-white"
+        >
+          Search
+        </button>
+        <button
+          id="sortMktCap"
+          class="hover:text-[#1A1A1C] hover:bg-white duration-300 ease-out cursor-pointer shadow-white h-12 md:w-55 w-full border-1 border-white"
+        >
+          Sort By Mkt Cap
+        </button>
+        <button
+          id="sortPercentage"
+          class="hover:text-[#1A1A1C] hover:bg-white duration-300 ease-in-out cursor-pointer shadow-white h-12 md:w-65 w-full border-1 border-white"
+        >
+          Sort By Percentage
+        </button>
+      </nav>
+      <div class="overflow-y-scroll h-130 w-full">
+        <table class="mt-5 w-full">
+          <thead>
+            <tr
+              class="p-2 border-b-1 w-full md:text-lg text-sm font-normal flex justify-between items-center"
+            >
+              <td
+                class="font-semibold h-10 w-45 flex justify-start items-center"
+              >
+                Name
+              </td>
+              <td
+                class="font-semibold h-10 w-10 flex justify-center items-center"
+              >
+                Symbol
+              </td>
+              <td class="font-semibold h-10 w-40 flex justify-end items-center">
+                Current Price
+              </td>
+              <td
+                class="font-semibold h-10 w-70 flex justify-center items-center"
+              >
+                Valuation
+              </td>
+              <td
+                class="font-semibold h-10 w-45 flex justify-center items-center"
+              >
+                Change Percentage
+              </td>
+              <td
+                class="font-semibold h-10 w-55 flex justify-center items-center"
+              >
+                Market Cap
+              </td>
+            </tr>
+          </thead>
+          <tbody id="list" class="mt-5 w-full"></tbody>
+        </table>
+      </div>
+    </main>
+    <script>
+      let list = document.querySelector("#list");
+      let search = document.querySelector("#search");
+      let searchbtn = document.querySelector("#searchbtn");
+      let sortMktCap = document.querySelector("#sortMktCap");
+      let sortPercentage = document.querySelector("#sortPercentage");
+      let BASE_URL =
+        "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
+      let data = [];
+      async function fetchData() {
+        try {
+          let responce = await fetch(BASE_URL);
+          data = await responce.json();
+          renderData(data);
+        } catch (err) {
+          console.log(err);
+        } finally {
+          console.log("Fetching Complete");
+        }
+      }
+      fetchData();
+      function renderData(rData) {
+        let html = "";
+        rData.forEach((ele) => {
+          html += `
+ <tr id="listData" class="p-2 border-b-1 w-full md:text-lg text-sm font-normal flex justify-between items-center duration-300 hover:text-black hover:bg-white">
+                    <td class="h-10 w-45 flex justify-start items-center"><img class="h-5 mr-2" src=${
+                      ele.image
+                    } alt="">${ele.name}</td>
+                    <td class="h-10 w-10 flex justify-center items-center uppercase">${
+                      ele.symbol
+                    }</td>
+                    <td class="h-10 w-40 flex justify-end items-center">$${
+                      ele.current_price
+                    }</td>
+                    <td class="h-10 w-70 flex justify-center items-center">$${ele.fully_diluted_valuation.toFixed(
+                      2
+                    )}</td>
+                    ${
+                      ele.market_cap_change_percentage_24h > 0
+                        ? `
+                    <td class="md:pr-10 h-10 w-45 flex justify-center items-center text-green-600">${ele.market_cap_change_percentage_24h.toFixed(
+                      2
+                    )}%</td>
+                    `
+                        : `
+                    <td class="md:pr-10 h-10 w-45 flex justify-center items-center text-red-600">${ele.market_cap_change_percentage_24h.toFixed(
+                      2
+                    )}%</td>
+                    `
+                    }
+                    <td class="h-10 w-55 flex justify-center items-center">Mkt Cap: $${
+                      ele.market_cap
+                    }</td>
+                </tr>
+  `;
+        });
+        list.innerHTML = html;
+      }
+      sortPercentage.addEventListener("click", () => {
+        data.sort((a,b)=>b.market_cap_change_percentage_24h - a.market_cap_change_percentage_24h)
+        renderData(data);
+      });
+      sortMktCap.addEventListener("click", () => {
+        data.sort((a,b)=>b.market_cap - a.market_cap)
+        renderData(data);
+      });
+      searchbtn.addEventListener('click',()=>{
+        if(search.value.length>0){
+          let nData = [...data.filter((ele)=>ele.name.toLowerCase() == search.value.toLowerCase() || ele.symbol.toLowerCase() == search.value.toLowerCase())]
+          renderData(nData)
+        }else{          
+          renderData(data)
+        }
+      })
+    </script>
+  </body>
+</html>
+ 
