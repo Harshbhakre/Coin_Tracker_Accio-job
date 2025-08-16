@@ -145,14 +145,19 @@
         data.sort((a,b)=>b.market_cap - a.market_cap)
         renderData(data);
       });
-      searchbtn.addEventListener('click',()=>{
-        if(search.value.length>0){
-          let nData = [...data.filter((ele)=>ele.name.toLowerCase() == search.value.toLowerCase() || ele.symbol.toLowerCase() == search.value.toLowerCase())]
-          renderData(nData)
-        }else{          
-          renderData(data)
-        }
-      })
+search.addEventListener('input', (e) => {
+  if (search.value.length > 0) {
+    let nData = data.filter(
+      (ele) =>
+        ele.name.toLowerCase().includes(e.target.value.toLowerCase()) ||
+        ele.symbol.toLowerCase().includes(e.target.value.toLowerCase())
+    );
+    renderData(nData);
+  } else {
+    renderData(data);
+  }
+});
+
     </script>
   </body>
 </html>
